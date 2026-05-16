@@ -25,6 +25,17 @@ jobs:
           xcodebuild -version
           swift --version
 
+      - name: Provision Local.xcconfig (ad-hoc signing for CI)
+        working-directory: WhisperCaption
+        run: |
+          # The Xcode project references WhisperCaption/Local.xcconfig as a
+          # base configuration. That file is per-machine and gitignored;
+          # contributors create theirs from the committed template. CI does
+          # the same — copies the template, which has DEVELOPMENT_TEAM empty,
+          # so the build below signs ad-hoc.
+          cp Local.xcconfig.template Local.xcconfig
+          cat Local.xcconfig
+
       - name: Resolve SwiftPM dependencies
         working-directory: WhisperCaption
         run: |
