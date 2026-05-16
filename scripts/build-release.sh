@@ -74,7 +74,7 @@ echo
 rm -rf "$ARCHIVE_PATH" "$EXPORT_DIR" "$DMG_PATH"
 
 # ---- 1. Archive ----
-echo "==> [1/4] Archiving ($CONFIG)..."
+echo "==> [1/5] Archiving ($CONFIG)..."
 xcodebuild archive \
   -project "$PROJECT" \
   -scheme "$SCHEME" \
@@ -109,7 +109,7 @@ EOF
 
 # ---- 3. Export ----
 echo
-echo "==> [2/4] Exporting signed .app..."
+echo "==> [2/5] Exporting signed .app..."
 xcodebuild -exportArchive \
   -archivePath "$ARCHIVE_PATH" \
   -exportPath "$EXPORT_DIR" \
@@ -122,7 +122,7 @@ fi
 
 # ---- 4. Verify codesign Authority — sanity audit ----
 echo
-echo "==> [3/4] Verifying codesign Authority..."
+echo "==> [3/5] Verifying codesign Authority..."
 codesign --verify --deep --strict --verbose=2 "$APP_PATH"
 
 echo
@@ -135,20 +135,103 @@ echo "Review the Authority lines above. They must show the brand identity"
 echo "(albond.dev@proton.me) and NOT any personal Apple ID."
 echo
 
-# ---- 5. Package .dmg ----
-echo "==> [4/4] Packaging $DMG_PATH..."
+# ---- 5. Generate themed DMG background (graceful fallback if Pillow missing) ----
+echo "==> [4/5] Generating themed installer background..."
+BG_PNG="$BUILD_DIR/dmg-background.png"
+FANCY_DMG=1
+if ! python3 "$SCRIPT_DIR/build-dmg-background.py" "$BG_PNG"; then
+  echo "    Background generator failed — falling back to plain DMG (no custom layout)."
+  FANCY_DMG=0
+fi
+
+# ---- 6. Package .dmg ----
+echo
+echo "==> [5/5] Packaging $DMG_PATH..."
 DMG_STAGING="$BUILD_DIR/dmg-staging"
-rm -rf "$DMG_STAGING"
+DMG_TEMP="$BUILD_DIR/WhisperCaption-temp.dmg"
+DMG_VOLNAME="WhisperCaption"
+rm -rf "$DMG_STAGING" "$DMG_TEMP"
 mkdir -p "$DMG_STAGING"
 cp -R "$APP_PATH" "$DMG_STAGING/"
 ln -s /Applications "$DMG_STAGING/Applications"
 
-hdiutil create \
-  -volname "WhisperCaption" \
-  -srcfolder "$DMG_STAGING" \
-  -ov \
-  -format UDZO \
-  "$DMG_PATH"
+# Detach any leftover mount with the same volume name from a previous failed run.
+if [[ -d "/Volumes/$DMG_VOLNAME" ]]; then
+  hdiutil detach "/Volumes/$DMG_VOLNAME" -force >/dev/null 2>&1 || true
+fi
+
+if [[ "$FANCY_DMG" == "1" ]]; then
+  # Embed the background image inside a hidden folder on the volume.
+  mkdir "$DMG_STAGING/.background"
+  cp "$BG_PNG" "$DMG_STAGING/.background/background.png"
+
+  # 1. Create writable DMG large enough to fit .app + background + .DS_Store.
+  hdiutil create \
+    -volname "$DMG_VOLNAME" \
+    -srcfolder "$DMG_STAGING" \
+    -fs HFS+ -fsargs "-c c=64,a=16,e=16" \
+    -format UDRW \
+    -ov \
+    "$DMG_TEMP" >/dev/null
+
+  # 2. Mount the writable DMG and capture its device node for later detach.
+  DEVICE=$(hdiutil attach -readwrite -noverify "$DMG_TEMP" \
+           | grep -E '^/dev/' | head -n 1 | awk '{print $1}')
+  if [[ -z "${DEVICE:-}" ]]; then
+    echo "ERROR: failed to mount temporary DMG." >&2
+    exit 1
+  fi
+  sleep 2
+
+  # 3. Configure the Finder window. Window is 600×400 in 1× points (matches
+  #    build-dmg-background.py canvas of 1200×800 at 2×). Order matters:
+  #    bounds/toolbar before view options; finish with update + delay +
+  #    close so Finder persists the state into .DS_Store.
+  osascript <<APPLESCRIPT
+tell application "Finder"
+  tell disk "$DMG_VOLNAME"
+    open
+    delay 1
+    tell container window
+      set current view to icon view
+      set toolbar visible to false
+      set statusbar visible to false
+      set the bounds to {400, 100, 1000, 500}
+    end tell
+    set viewOptions to icon view options of container window
+    set arrangement of viewOptions to not arranged
+    set icon size of viewOptions to 112
+    set text size of viewOptions to 12
+    set background picture of viewOptions to file ".background:background.png"
+    set position of item "WhisperCaption.app" of container window to {160, 235}
+    set position of item "Applications" of container window to {440, 235}
+    update without registering applications
+    delay 2
+    close
+  end tell
+end tell
+APPLESCRIPT
+
+  # 4. Flush filesystem and detach cleanly.
+  sync
+  hdiutil detach "$DEVICE" >/dev/null
+
+  # 5. Convert the writable temp DMG into a compressed read-only final DMG.
+  hdiutil convert "$DMG_TEMP" \
+    -format UDZO \
+    -imagekey zlib-level=9 \
+    -ov \
+    -o "$DMG_PATH" >/dev/null
+  rm -f "$DMG_TEMP"
+else
+  # Plain fallback — no background, no icon layout. Still functional.
+  hdiutil create \
+    -volname "$DMG_VOLNAME" \
+    -srcfolder "$DMG_STAGING" \
+    -ov \
+    -format UDZO \
+    "$DMG_PATH" >/dev/null
+fi
 
 rm -rf "$DMG_STAGING"
 
