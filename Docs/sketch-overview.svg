@@ -1,0 +1,171 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 760" font-family="-apple-system, 'SF Pro Text', 'Helvetica Neue', Arial, sans-serif" role="img" aria-label="WhisperCaption UI prototype sketch: menu bar entry point, two-column captions HUD, bottom-of-screen CC strip, and a Hide-from-capture toggle annotation">
+  <title>WhisperCaption UI prototype sketch</title>
+
+  <!-- Paper background -->
+  <defs>
+    <linearGradient id="paper" x1="0" x2="0" y1="0" y2="1">
+      <stop offset="0" stop-color="#FBF7EE"/>
+      <stop offset="1" stop-color="#F4ECDB"/>
+    </linearGradient>
+    <linearGradient id="micFill" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0" stop-color="#CFE0F4"/>
+      <stop offset="1" stop-color="#A7C3E5"/>
+    </linearGradient>
+    <linearGradient id="sysFill" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0" stop-color="#E2D6F1"/>
+      <stop offset="1" stop-color="#C5B4E2"/>
+    </linearGradient>
+    <linearGradient id="hudFill" x1="0" x2="0" y1="0" y2="1">
+      <stop offset="0" stop-color="#FFFFFF" stop-opacity="0.55"/>
+      <stop offset="1" stop-color="#FFFFFF" stop-opacity="0.10"/>
+    </linearGradient>
+    <linearGradient id="ccFill" x1="0" x2="0" y1="0" y2="1">
+      <stop offset="0" stop-color="#1F1F2A"/>
+      <stop offset="1" stop-color="#101019"/>
+    </linearGradient>
+    <pattern id="grid" width="36" height="36" patternUnits="userSpaceOnUse">
+      <path d="M36 0H0V36" fill="none" stroke="#E6DCC4" stroke-width="0.6"/>
+    </pattern>
+    <marker id="arrow" viewBox="0 0 12 12" refX="9" refY="6" markerWidth="9" markerHeight="9" orient="auto">
+      <path d="M2 2 L10 6 L2 10 Z" fill="#8B7355"/>
+    </marker>
+  </defs>
+
+  <rect width="1280" height="760" fill="url(#paper)"/>
+  <rect width="1280" height="760" fill="url(#grid)" opacity="0.55"/>
+
+  <!-- Header title -->
+  <text x="64" y="62" font-size="28" font-weight="700" fill="#3B3528">WhisperCaption</text>
+  <text x="64" y="86" font-size="14" fill="#7A6C50" letter-spacing="2">UI PROTOTYPE · SKETCH</text>
+  <line x1="64" y1="100" x2="220" y2="100" stroke="#B89B5E" stroke-width="2" stroke-linecap="round"/>
+
+  <!-- ===== Menu Bar mock ===== -->
+  <g transform="translate(64,150)">
+    <rect width="380" height="44" rx="9" ry="9" fill="#222226" stroke="#0E0E12" stroke-width="1.5"/>
+    <!-- traffic-light dots stand in for menu-bar icons -->
+    <circle cx="22" cy="22" r="6" fill="#9CA0AC"/>
+    <circle cx="46" cy="22" r="6" fill="#9CA0AC"/>
+    <circle cx="70" cy="22" r="6" fill="#9CA0AC"/>
+    <circle cx="94" cy="22" r="6" fill="#9CA0AC"/>
+    <text x="120" y="27" font-size="13" fill="#C9CDD8">··· menu-bar items ···</text>
+    <!-- WhisperCaption icon -->
+    <g transform="translate(312,8)">
+      <rect width="56" height="28" rx="7" ry="7" fill="#2F2F36" stroke="#5B5F74" stroke-width="1"/>
+      <text x="28" y="19" text-anchor="middle" font-size="13" font-weight="700" fill="#F5D866">CC</text>
+    </g>
+    <text x="190" y="76" font-size="13" fill="#7A6C50">Menu-bar status item · always-on entry point</text>
+  </g>
+
+  <!-- arrow from icon down to Main HUD -->
+  <path d="M 384 196 C 400 240 250 270 250 320" fill="none" stroke="#8B7355" stroke-width="1.6" stroke-dasharray="5 4" marker-end="url(#arrow)"/>
+
+  <!-- ===== Main HUD ===== -->
+  <g transform="translate(64,300)">
+    <!-- window outline -->
+    <rect x="0" y="0" width="620" height="380" rx="18" ry="18" fill="url(#hudFill)" stroke="#3B3528" stroke-width="2"/>
+    <!-- title bar -->
+    <rect x="0" y="0" width="620" height="36" rx="18" ry="18" fill="#EEE6D4"/>
+    <rect x="0" y="22" width="620" height="14" fill="#EEE6D4"/>
+    <circle cx="18" cy="18" r="6" fill="#E66A6A"/>
+    <circle cx="38" cy="18" r="6" fill="#E5B14A"/>
+    <circle cx="58" cy="18" r="6" fill="#5DB87D"/>
+    <text x="310" y="23" text-anchor="middle" font-size="12" font-weight="600" fill="#3B3528">Main HUD · live captions</text>
+
+    <!-- column labels -->
+    <text x="155" y="62" text-anchor="middle" font-size="11" font-weight="600" fill="#6B5A8C" letter-spacing="1.5">SYSTEM AUDIO</text>
+    <text x="465" y="62" text-anchor="middle" font-size="11" font-weight="600" fill="#3D6FB8" letter-spacing="1.5">MICROPHONE</text>
+
+    <!-- system bubble (left) -->
+    <g transform="translate(16,78)">
+      <rect width="278" height="58" rx="18" ry="18" fill="url(#sysFill)" stroke="#7A5DAE" stroke-width="1.5"/>
+      <line x1="14" y1="22" x2="180" y2="22" stroke="#5B4684" stroke-width="2" stroke-linecap="round"/>
+      <line x1="14" y1="32" x2="240" y2="32" stroke="#5B4684" stroke-width="2" stroke-linecap="round"/>
+      <line x1="14" y1="42" x2="120" y2="42" stroke="#7A5DAE" stroke-width="1.5" stroke-linecap="round" opacity="0.7"/>
+      <text x="14" y="76" font-size="10" fill="#6B5A8C">EN → translation underneath</text>
+    </g>
+
+    <!-- mic bubble (right) -->
+    <g transform="translate(326,78)">
+      <rect width="278" height="50" rx="18" ry="18" fill="url(#micFill)" stroke="#3D6FB8" stroke-width="1.5"/>
+      <line x1="14" y1="20" x2="200" y2="20" stroke="#1F4A85" stroke-width="2" stroke-linecap="round"/>
+      <line x1="14" y1="32" x2="160" y2="32" stroke="#1F4A85" stroke-width="2" stroke-linecap="round"/>
+    </g>
+
+    <!-- system bubble 2 -->
+    <g transform="translate(16,168)">
+      <rect width="220" height="50" rx="18" ry="18" fill="url(#sysFill)" stroke="#7A5DAE" stroke-width="1.5"/>
+      <line x1="14" y1="20" x2="170" y2="20" stroke="#5B4684" stroke-width="2" stroke-linecap="round"/>
+      <line x1="14" y1="32" x2="100" y2="32" stroke="#7A5DAE" stroke-width="1.5" stroke-linecap="round" opacity="0.7"/>
+    </g>
+
+    <!-- mic bubble 2 -->
+    <g transform="translate(326,240)">
+      <rect width="278" height="80" rx="18" ry="18" fill="url(#micFill)" stroke="#3D6FB8" stroke-width="1.5"/>
+      <line x1="14" y1="20" x2="240" y2="20" stroke="#1F4A85" stroke-width="2" stroke-linecap="round"/>
+      <line x1="14" y1="32" x2="220" y2="32" stroke="#1F4A85" stroke-width="2" stroke-linecap="round"/>
+      <line x1="14" y1="44" x2="180" y2="44" stroke="#1F4A85" stroke-width="2" stroke-linecap="round"/>
+      <line x1="14" y1="56" x2="120" y2="56" stroke="#1F4A85" stroke-width="2" stroke-linecap="round"/>
+    </g>
+
+    <!-- status footer -->
+    <rect x="0" y="344" width="620" height="36" rx="0" ry="0" fill="#EEE6D4"/>
+    <rect x="0" y="344" width="620" height="36" rx="0" ry="0" fill="none"/>
+    <circle cx="22" cy="362" r="5" fill="#5DB87D"/>
+    <text x="36" y="366" font-size="12" fill="#3B3528">listening · WhisperKit (local)</text>
+    <text x="608" y="366" text-anchor="end" font-size="12" fill="#6B5A4A">EN → ES translation on</text>
+
+    <text x="-12" y="404" font-size="13" fill="#7A6C50">↳ two columns · mic right, system left · bubbles intermix on a single timeline</text>
+  </g>
+
+  <!-- ===== CC HUD strip ===== -->
+  <g transform="translate(64,720)" />
+  <g transform="translate(720,300)">
+    <text x="0" y="-12" font-size="14" font-weight="600" fill="#3B3528">CC HUD · subtitle strip</text>
+    <text x="0" y="6" font-size="11" fill="#7A6C50">cinema-style, bottom of any screen, above fullscreen video</text>
+    <rect x="0" y="22" width="496" height="120" rx="20" ry="20" fill="url(#ccFill)" stroke="#000" stroke-width="1.2"/>
+    <text x="248" y="74" text-anchor="middle" font-size="18" font-weight="600" fill="#FFFFFF">Welcome to today's product update.</text>
+    <text x="248" y="106" text-anchor="middle" font-size="16" fill="#F5D866" font-style="italic">Bienvenidos a la actualización de hoy.</text>
+
+    <!-- ===== Settings card mini ===== -->
+    <g transform="translate(0,180)">
+      <text x="0" y="0" font-size="14" font-weight="600" fill="#3B3528">Settings · per-window controls</text>
+      <rect x="0" y="14" width="496" height="170" rx="14" ry="14" fill="#FFFFFF" stroke="#3B3528" stroke-width="1.4"/>
+
+      <text x="20" y="40" font-size="12" font-weight="600" fill="#3B3528">Opacity</text>
+      <rect x="120" y="32" width="340" height="10" rx="5" ry="5" fill="#E6DCC4"/>
+      <rect x="120" y="32" width="220" height="10" rx="5" ry="5" fill="#3D6FB8"/>
+      <circle cx="340" cy="37" r="9" fill="#FFFFFF" stroke="#3D6FB8" stroke-width="2"/>
+
+      <text x="20" y="74" font-size="12" font-weight="600" fill="#3B3528">Always on top</text>
+      <g transform="translate(420,62)">
+        <rect width="44" height="24" rx="12" ry="12" fill="#5DB87D"/>
+        <circle cx="32" cy="12" r="9" fill="#FFFFFF"/>
+      </g>
+
+      <text x="20" y="108" font-size="12" font-weight="600" fill="#3B3528">Show on all Spaces</text>
+      <g transform="translate(420,96)">
+        <rect width="44" height="24" rx="12" ry="12" fill="#5DB87D"/>
+        <circle cx="32" cy="12" r="9" fill="#FFFFFF"/>
+      </g>
+
+      <!-- Hide from capture toggle (highlighted) -->
+      <rect x="10" y="126" width="476" height="46" rx="10" ry="10" fill="#FFF6D6" stroke="#D4A537" stroke-width="1.6"/>
+      <text x="20" y="156" font-size="13" font-weight="700" fill="#7A5A12">Hide from screen capture</text>
+      <g transform="translate(420,140)">
+        <rect width="44" height="24" rx="12" ry="12" fill="#D4A537"/>
+        <circle cx="32" cy="12" r="9" fill="#FFFFFF"/>
+      </g>
+    </g>
+  </g>
+
+  <!-- Callouts -->
+  <!-- callout: hide from capture -->
+  <g>
+    <path d="M 1180 590 C 1230 540 1230 460 1180 408" fill="none" stroke="#B45309" stroke-width="1.6" stroke-dasharray="4 4" marker-end="url(#arrow)"/>
+    <rect x="1182" y="592" width="62" height="28" rx="6" ry="6" fill="#FFF1B8" stroke="#B45309" stroke-width="1.4"/>
+    <text x="1213" y="610" text-anchor="middle" font-size="11" font-weight="700" fill="#7A4A0E">★ flip</text>
+  </g>
+
+  <!-- bottom strip: footer caption -->
+  <text x="640" y="740" text-anchor="middle" font-size="13" fill="#7A6C50" font-style="italic">three windows · one registry · all options live in Settings → Windows</text>
+</svg>

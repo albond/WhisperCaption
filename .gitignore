@@ -1,0 +1,61 @@
+# ===== macOS =====
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon?
+._*
+.Spotlight-V100
+.Trashes
+.fseventsd
+.TemporaryItems
+
+# ===== Xcode user state =====
+xcuserdata/
+*.xcuserstate
+*.xcuserdatad/
+project.xcworkspace/xcuserdata/
+*.xcodeproj/xcuserdata/
+*.xcodeproj/project.xcworkspace/xcuserdata/
+*.xcscmblueprint
+*.xccheckout
+*.moved-aside
+
+# ===== Xcode build output =====
+build/
+DerivedData/
+*.hmap
+*.ipa
+*.dSYM.zip
+*.dSYM
+
+# ===== SwiftPM =====
+.build/
+.swiftpm/
+Packages/
+
+# Package.resolved is checked in — pins exact versions for reproducible builds
+
+# ===== Local signing config (per-machine team ID) =====
+WhisperCaption/Local.xcconfig
+
+# ===== Release artifacts (built locally, uploaded to Releases manually) =====
+*.dmg
+*.pkg
+*.app
+
+# ===== Code coverage =====
+*.profraw
+*.profdata
+
+# ===== Editors =====
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# ===== Python helper scripts =====
+__pycache__/
+*.pyc
+.venv/
+venv/

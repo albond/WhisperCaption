@@ -1,0 +1,339 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1400 900" font-family="-apple-system, 'SF Pro Text', 'Helvetica Neue', Arial, sans-serif" role="img" aria-label="WhisperCaption main window — live recording session with English captions on both sides and Spanish translation under the system-audio bubbles">
+  <title>WhisperCaption — main window demo (English captions, Spanish translation)</title>
+
+  <defs>
+    <!-- Desktop wallpaper hint -->
+    <linearGradient id="wall" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0" stop-color="#1A1F32"/>
+      <stop offset="0.55" stop-color="#2A2342"/>
+      <stop offset="1" stop-color="#15131F"/>
+    </linearGradient>
+    <radialGradient id="wallGlow" cx="0.85" cy="0.15" r="0.7">
+      <stop offset="0" stop-color="#7E6BFF" stop-opacity="0.35"/>
+      <stop offset="1" stop-color="#7E6BFF" stop-opacity="0"/>
+    </radialGradient>
+
+    <!-- Window body -->
+    <linearGradient id="winBG" x1="0" x2="0" y1="0" y2="1">
+      <stop offset="0" stop-color="#23242F" stop-opacity="0.985"/>
+      <stop offset="1" stop-color="#181922" stop-opacity="0.985"/>
+    </linearGradient>
+    <linearGradient id="titleBar" x1="0" x2="0" y1="0" y2="1">
+      <stop offset="0" stop-color="#2C2D38"/>
+      <stop offset="1" stop-color="#232430"/>
+    </linearGradient>
+
+    <!-- App icon (blue rounded square with waveform) -->
+    <linearGradient id="appIcon" x1="0" x2="0" y1="0" y2="1">
+      <stop offset="0" stop-color="#3A99FF"/>
+      <stop offset="1" stop-color="#0E6BE0"/>
+    </linearGradient>
+
+    <!-- Source-card icons -->
+    <linearGradient id="sysIcon" x1="0" x2="0" y1="0" y2="1">
+      <stop offset="0" stop-color="#FFB155"/>
+      <stop offset="1" stop-color="#F58A1F"/>
+    </linearGradient>
+    <linearGradient id="micIcon" x1="0" x2="0" y1="0" y2="1">
+      <stop offset="0" stop-color="#4DD96E"/>
+      <stop offset="1" stop-color="#23B048"/>
+    </linearGradient>
+
+    <!-- Bubbles -->
+    <linearGradient id="sysBubble" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0" stop-color="#9A8AE6"/>
+      <stop offset="1" stop-color="#6E5BCC"/>
+    </linearGradient>
+    <linearGradient id="micBubble" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0" stop-color="#2196FF"/>
+      <stop offset="1" stop-color="#0A66D6"/>
+    </linearGradient>
+    <linearGradient id="bubbleShine" x1="0" x2="0" y1="0" y2="1">
+      <stop offset="0" stop-color="#FFFFFF" stop-opacity="0.28"/>
+      <stop offset="0.55" stop-color="#FFFFFF" stop-opacity="0"/>
+    </linearGradient>
+
+    <!-- Buttons -->
+    <linearGradient id="stopBtn" x1="0" x2="0" y1="0" y2="1">
+      <stop offset="0" stop-color="#FF5F57"/>
+      <stop offset="1" stop-color="#E63D34"/>
+    </linearGradient>
+    <linearGradient id="autoScroll" x1="0" x2="0" y1="0" y2="1">
+      <stop offset="0" stop-color="#1F8FFF"/>
+      <stop offset="1" stop-color="#0A66D6"/>
+    </linearGradient>
+
+    <!-- Level meter fills -->
+    <linearGradient id="sysLevel" x1="0" x2="1" y1="0" y2="0">
+      <stop offset="0" stop-color="#FF8F2E"/>
+      <stop offset="1" stop-color="#FFB155"/>
+    </linearGradient>
+    <linearGradient id="micLevel" x1="0" x2="1" y1="0" y2="0">
+      <stop offset="0" stop-color="#23B048"/>
+      <stop offset="1" stop-color="#4DD96E"/>
+    </linearGradient>
+
+    <filter id="winShadow" x="-5%" y="-5%" width="110%" height="115%">
+      <feDropShadow dx="0" dy="14" stdDeviation="22" flood-color="#000" flood-opacity="0.55"/>
+    </filter>
+    <filter id="softShadow" x="-10%" y="-15%" width="120%" height="140%">
+      <feDropShadow dx="0" dy="3" stdDeviation="6" flood-color="#000" flood-opacity="0.35"/>
+    </filter>
+  </defs>
+
+  <!-- ===== Wallpaper ===== -->
+  <rect width="1400" height="900" fill="url(#wall)"/>
+  <rect width="1400" height="900" fill="url(#wallGlow)"/>
+
+  <!-- ===== Window ===== -->
+  <g transform="translate(60,40)" filter="url(#winShadow)">
+    <!-- body -->
+    <rect width="1280" height="820" rx="12" ry="12" fill="url(#winBG)" stroke="#0E0F18" stroke-width="1"/>
+
+    <!-- macOS title bar -->
+    <rect width="1280" height="32" rx="12" ry="12" fill="url(#titleBar)"/>
+    <rect y="20" width="1280" height="12" fill="url(#titleBar)"/>
+    <line x1="0" y1="32" x2="1280" y2="32" stroke="#0E0F18" stroke-width="0.8"/>
+    <circle cx="20" cy="16" r="6" fill="#FF5F57" stroke="#E0443E" stroke-width="0.5"/>
+    <circle cx="40" cy="16" r="6" fill="#FEBC2E" stroke="#D89E22" stroke-width="0.5"/>
+    <circle cx="60" cy="16" r="6" fill="#28C840" stroke="#1AAD2D" stroke-width="0.5"/>
+    <text x="640" y="20" text-anchor="middle" font-size="12" font-weight="600" fill="#B9BAC4">WhisperCaption</text>
+
+    <!-- ============= App header row ============= -->
+    <g transform="translate(0,32)">
+      <!-- App icon -->
+      <g transform="translate(28,22)">
+        <rect width="44" height="44" rx="10" ry="10" fill="url(#appIcon)"/>
+        <!-- waveform glyph: 5 vertical bars -->
+        <g fill="#FFFFFF">
+          <rect x="11" y="18" width="3" height="8" rx="1.5"/>
+          <rect x="17" y="14" width="3" height="16" rx="1.5"/>
+          <rect x="23" y="10" width="3" height="24" rx="1.5"/>
+          <rect x="29" y="14" width="3" height="16" rx="1.5"/>
+          <rect x="35" y="18" width="3" height="8" rx="1.5"/>
+        </g>
+      </g>
+
+      <!-- App title -->
+      <text x="86" y="51" font-size="20" font-weight="700" fill="#FFFFFF">WhisperCaption</text>
+
+      <!-- Session pill -->
+      <g transform="translate(264,30)">
+        <rect width="240" height="32" rx="9" ry="9" fill="#2A2B36" stroke="#3D3F4C" stroke-width="0.8"/>
+        <!-- chat-bubble icon -->
+        <g transform="translate(12,8)" fill="#B9BAC4">
+          <path d="M2 4 a3 3 0 0 1 3 -3 h10 a3 3 0 0 1 3 3 v6 a3 3 0 0 1 -3 3 h-8 l-4 3 v-3 h-1 a3 3 0 0 1 -3 -3 z" stroke="#B9BAC4" stroke-width="0.8" fill="#2A2B36"/>
+        </g>
+        <text x="36" y="21" font-size="12" font-weight="500" fill="#E8E9F2" font-family="ui-monospace, 'SF Mono', Menlo, monospace">2026-05-16-14-02-09</text>
+        <!-- chevron -->
+        <path d="M222 13 L227 18 L232 13" fill="none" stroke="#9AA0B4" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+      </g>
+
+      <!-- Language pill -->
+      <g transform="translate(520,30)">
+        <rect width="78" height="32" rx="9" ry="9" fill="#2A2B36" stroke="#3D3F4C" stroke-width="0.8"/>
+        <!-- globe icon -->
+        <g transform="translate(12,10)">
+          <circle cx="6" cy="6" r="6" fill="none" stroke="#B9BAC4" stroke-width="1.2"/>
+          <ellipse cx="6" cy="6" rx="2.4" ry="6" fill="none" stroke="#B9BAC4" stroke-width="1.0"/>
+          <line x1="0" y1="6" x2="12" y2="6" stroke="#B9BAC4" stroke-width="1.0"/>
+        </g>
+        <text x="34" y="21" font-size="12" font-weight="600" fill="#E8E9F2">EN</text>
+      </g>
+
+      <!-- Status pill (Recording) -->
+      <g transform="translate(1024,30)">
+        <rect width="116" height="32" rx="9" ry="9" fill="#2A2B36" stroke="#3D3F4C" stroke-width="0.8"/>
+        <circle cx="18" cy="16" r="5" fill="#FF5F57">
+          <animate attributeName="opacity" values="1;0.35;1" dur="1.4s" repeatCount="indefinite"/>
+        </circle>
+        <text x="32" y="21" font-size="12" font-weight="600" fill="#E8E9F2">Recording</text>
+      </g>
+
+      <!-- Stop button -->
+      <g transform="translate(1156,28)">
+        <rect width="96" height="36" rx="10" ry="10" fill="url(#stopBtn)"/>
+        <!-- stop square glyph -->
+        <rect x="20" y="13" width="10" height="10" rx="1.5" fill="#FFFFFF"/>
+        <text x="38" y="23" font-size="14" font-weight="700" fill="#FFFFFF">Stop</text>
+      </g>
+    </g>
+
+    <!-- ============= Source cards row ============= -->
+    <g transform="translate(0,124)">
+      <!-- System audio card -->
+      <g transform="translate(28,0)">
+        <rect width="608" height="92" rx="14" ry="14" fill="#22232E" stroke="#3A3B47" stroke-width="0.8"/>
+        <!-- icon -->
+        <g transform="translate(16,16)">
+          <rect width="44" height="44" rx="10" ry="10" fill="url(#sysIcon)"/>
+          <!-- speaker glyph -->
+          <g transform="translate(8,11)" fill="#FFFFFF">
+            <path d="M0 8 h6 l10 -7 v22 l-10 -7 h-6 z"/>
+            <path d="M19 6 q5 6 0 14" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round"/>
+            <path d="M24 2 q9 10 0 22" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round"/>
+          </g>
+        </g>
+        <!-- title -->
+        <text x="74" y="32" font-size="15" font-weight="700" fill="#FFFFFF">System audio</text>
+        <text x="74" y="52" font-size="12" fill="#9AA0B4">What macOS is playing</text>
+        <!-- device dropdown -->
+        <g transform="translate(420,22)">
+          <rect width="170" height="30" rx="8" ry="8" fill="#2E2F3A" stroke="#42434F" stroke-width="0.8"/>
+          <path d="M14 15 L18 19 L22 15" fill="none" stroke="#B9BAC4" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+          <text x="32" y="20" font-size="12" font-weight="500" fill="#E8E9F2">Default output</text>
+        </g>
+        <!-- level meter -->
+        <rect x="16" y="74" width="540" height="6" rx="3" ry="3" fill="#2A2B36"/>
+        <rect x="16" y="74" width="350" height="6" rx="3" ry="3" fill="url(#sysLevel)"/>
+        <text x="580" y="79" font-size="11" font-weight="600" fill="#5A5C6E">−</text>
+      </g>
+
+      <!-- Microphone card -->
+      <g transform="translate(644,0)">
+        <rect width="608" height="92" rx="14" ry="14" fill="#22232E" stroke="#3A3B47" stroke-width="0.8"/>
+        <g transform="translate(16,16)">
+          <rect width="44" height="44" rx="10" ry="10" fill="url(#micIcon)"/>
+          <!-- mic glyph -->
+          <g transform="translate(15,9)" fill="#FFFFFF">
+            <rect x="0" y="0" width="14" height="20" rx="7"/>
+            <path d="M-3 16 a10 10 0 0 0 20 0" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round"/>
+            <line x1="7" y1="26" x2="7" y2="30" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round"/>
+            <line x1="3" y1="30" x2="11" y2="30" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round"/>
+          </g>
+        </g>
+        <text x="74" y="32" font-size="15" font-weight="700" fill="#FFFFFF">Microphone</text>
+        <text x="74" y="52" font-size="12" fill="#9AA0B4">Me speaking</text>
+        <g transform="translate(420,22)">
+          <rect width="170" height="30" rx="8" ry="8" fill="#2E2F3A" stroke="#42434F" stroke-width="0.8"/>
+          <path d="M14 15 L18 19 L22 15" fill="none" stroke="#B9BAC4" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+          <text x="32" y="20" font-size="12" font-weight="500" fill="#E8E9F2">Default input</text>
+        </g>
+        <rect x="16" y="74" width="540" height="6" rx="3" ry="3" fill="#2A2B36"/>
+        <rect x="16" y="74" width="220" height="6" rx="3" ry="3" fill="url(#micLevel)"/>
+        <text x="580" y="79" font-size="11" font-weight="600" fill="#5A5C6E">−</text>
+      </g>
+    </g>
+
+    <!-- ============= Chat area ============= -->
+    <g transform="translate(0,244)">
+      <!-- subtle divider -->
+      <line x1="28" y1="0" x2="1252" y2="0" stroke="#0E0F18" stroke-width="1"/>
+
+      <!-- ===== bubble row 1 — SYSTEM (left) ===== -->
+      <g transform="translate(28,28)" filter="url(#softShadow)">
+        <rect width="540" height="52" rx="18" ry="18" fill="url(#sysBubble)"/>
+        <rect width="540" height="22" rx="18" ry="18" fill="url(#bubbleShine)"/>
+        <text x="22" y="32" font-size="15" font-weight="600" fill="#FFFFFF">Quick standup — what's the status of the new release?</text>
+      </g>
+      <!-- translation row (under, leading, gray secondary) -->
+      <g transform="translate(28,86)">
+        <!-- globe glyph tinted with bubble color -->
+        <g transform="translate(4,3)" stroke="#9A8AE6" stroke-width="1.0" fill="none">
+          <circle cx="6" cy="6" r="5.5"/>
+          <ellipse cx="6" cy="6" rx="2.2" ry="5.5"/>
+          <line x1="0.5" y1="6" x2="11.5" y2="6"/>
+        </g>
+        <text x="22" y="14" font-size="12" fill="#9AA0B4" font-style="italic">Reunión rápida — ¿cuál es el estado de la nueva versión?</text>
+      </g>
+      <text x="28" y="120" font-size="10" fill="#6F7388">14:02 · system audio</text>
+
+      <!-- ===== bubble row 2 — MIC (right) ===== -->
+      <g transform="translate(720,28)" filter="url(#softShadow)">
+        <rect width="532" height="76" rx="18" ry="18" fill="url(#micBubble)"/>
+        <rect width="532" height="26" rx="18" ry="18" fill="url(#bubbleShine)"/>
+        <text x="22" y="34" font-size="15" font-weight="600" fill="#FFFFFF">Hi team. We finished the dual-stream</text>
+        <text x="22" y="56" font-size="15" font-weight="600" fill="#FFFFFF">capture work yesterday.</text>
+      </g>
+      <text x="1252" y="120" text-anchor="end" font-size="10" fill="#6F7388">14:02 · microphone</text>
+
+      <!-- ===== bubble row 3 — SYSTEM (left) ===== -->
+      <g transform="translate(28,140)" filter="url(#softShadow)">
+        <rect width="568" height="76" rx="18" ry="18" fill="url(#sysBubble)"/>
+        <rect width="568" height="26" rx="18" ry="18" fill="url(#bubbleShine)"/>
+        <text x="22" y="34" font-size="15" font-weight="600" fill="#FFFFFF">Sounds great. Any blockers from QA</text>
+        <text x="22" y="56" font-size="15" font-weight="600" fill="#FFFFFF">before we cut the release?</text>
+      </g>
+      <!-- translation under bubble 3 -->
+      <g transform="translate(28,222)">
+        <g transform="translate(4,3)" stroke="#9A8AE6" stroke-width="1.0" fill="none">
+          <circle cx="6" cy="6" r="5.5"/>
+          <ellipse cx="6" cy="6" rx="2.2" ry="5.5"/>
+          <line x1="0.5" y1="6" x2="11.5" y2="6"/>
+        </g>
+        <text x="22" y="14" font-size="12" fill="#9AA0B4" font-style="italic">Suena genial. ¿Hay bloqueos de QA antes de cortar la versión?</text>
+      </g>
+      <text x="28" y="256" font-size="10" fill="#6F7388">14:03 · system audio</text>
+
+      <!-- ===== bubble row 4 — MIC (right) ===== -->
+      <g transform="translate(800,164)" filter="url(#softShadow)">
+        <rect width="452" height="52" rx="18" ry="18" fill="url(#micBubble)"/>
+        <rect width="452" height="22" rx="18" ry="18" fill="url(#bubbleShine)"/>
+        <text x="22" y="32" font-size="15" font-weight="600" fill="#FFFFFF">No blockers. Translation tests pass.</text>
+      </g>
+      <text x="1252" y="234" text-anchor="end" font-size="10" fill="#6F7388">14:03 · microphone</text>
+
+      <!-- ===== bubble row 5 — SYSTEM (left, live partial) ===== -->
+      <g transform="translate(28,276)" filter="url(#softShadow)">
+        <rect width="448" height="52" rx="18" ry="18" fill="url(#sysBubble)" stroke="#FFFFFF" stroke-opacity="0.30" stroke-width="0.8"/>
+        <rect width="448" height="22" rx="18" ry="18" fill="url(#bubbleShine)"/>
+        <text x="22" y="32" font-size="15" font-weight="600" fill="#FFFFFF">Perfect. Let's ship it on Friday.</text>
+        <circle cx="426" cy="26" r="4.5" fill="#39E07A">
+          <animate attributeName="opacity" values="1;0.35;1" dur="1.4s" repeatCount="indefinite"/>
+        </circle>
+      </g>
+      <!-- translation under bubble 5 -->
+      <g transform="translate(28,334)">
+        <g transform="translate(4,3)" stroke="#9A8AE6" stroke-width="1.0" fill="none">
+          <circle cx="6" cy="6" r="5.5"/>
+          <ellipse cx="6" cy="6" rx="2.2" ry="5.5"/>
+          <line x1="0.5" y1="6" x2="11.5" y2="6"/>
+        </g>
+        <text x="22" y="14" font-size="12" fill="#9AA0B4" font-style="italic">Perfecto. Lo lanzamos el viernes.</text>
+      </g>
+      <text x="28" y="368" font-size="10" fill="#6F7388">14:03 · system audio · live</text>
+    </g>
+
+    <!-- ============= Footer ============= -->
+    <g transform="translate(0,748)">
+      <line x1="0" y1="0" x2="1280" y2="0" stroke="#0E0F18" stroke-width="1"/>
+      <rect y="0" width="1280" height="72" fill="#1B1C25"/>
+
+      <!-- New chat button (outlined) -->
+      <g transform="translate(28,18)">
+        <rect width="138" height="36" rx="10" ry="10" fill="transparent" stroke="#3D3F4C" stroke-width="1"/>
+        <!-- pencil-edit icon -->
+        <g transform="translate(14,11)" fill="none" stroke="#E8E9F2" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M2 13 L2 16 L5 16 L15 6 L12 3 Z"/>
+          <line x1="11" y1="4" x2="14" y2="7"/>
+        </g>
+        <text x="38" y="23" font-size="13" font-weight="600" fill="#E8E9F2">New chat</text>
+      </g>
+
+      <!-- Auto-scroll button (filled blue) -->
+      <g transform="translate(178,18)">
+        <rect width="148" height="36" rx="10" ry="10" fill="url(#autoScroll)"/>
+        <!-- down arrow icon -->
+        <g transform="translate(14,9)" fill="none" stroke="#FFFFFF" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="9" y1="2" x2="9" y2="16"/>
+          <path d="M3 11 L9 17 L15 11"/>
+        </g>
+        <text x="42" y="23" font-size="13" font-weight="700" fill="#FFFFFF">Auto-scroll</text>
+      </g>
+
+      <!-- Engine indicator (right) -->
+      <g transform="translate(1056,18)">
+        <rect width="196" height="36" rx="10" ry="10" fill="#22232E" stroke="#3D3F4C" stroke-width="1"/>
+        <!-- laptop icon -->
+        <g transform="translate(12,11)" fill="none" stroke="#39E07A" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="0" y="0" width="16" height="11" rx="1.5"/>
+          <line x1="-2" y1="14" x2="18" y2="14"/>
+        </g>
+        <text x="36" y="23" font-size="12" font-weight="600" fill="#E8E9F2">WhisperKit · local</text>
+      </g>
+    </g>
+  </g>
+
+  <!-- Caption -->
+  <text x="700" y="884" text-anchor="middle" font-size="13" fill="#B6BACC">Main window · live recording · English captions with Spanish translation under system-audio bubbles</text>
+</svg>

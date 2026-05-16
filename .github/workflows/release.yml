@@ -1,0 +1,90 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  draft-release:
+    name: Create draft release with changelog
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout (full history for tag walk)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Generate changelog
+        id: changelog
+        run: |
+          set -eu
+
+          # Find the previous tag, if any. We compare HEAD-of-tag against
+          # the closest predecessor by semver-like sort.
+          PREV_TAG="$(git tag --sort=-version:refname \
+                      | grep -vxF "${GITHUB_REF_NAME}" \
+                      | head -n 1 || true)"
+
+          if [ -z "$PREV_TAG" ]; then
+            echo "First tagged release; logging from initial commit."
+            LOG_RANGE=""
+          else
+            echo "Previous tag: $PREV_TAG"
+            LOG_RANGE="${PREV_TAG}..${GITHUB_REF_NAME}"
+          fi
+
+          {
+            echo "## Changes"
+            echo
+            git log $LOG_RANGE --pretty=format:'- %s' --no-merges \
+              | grep -v -iE '^- (chore|wip|fixup|squash)' \
+              || echo "- Initial release."
+            echo
+            echo
+            echo "---"
+            echo
+            echo "### Install"
+            echo
+            echo "**Pre-built \`.dmg\`** — download below, then on first launch right-click \`WhisperCaption.app\` and choose **Open** (Gatekeeper bypass — see README)."
+            echo
+            echo "**From source** — clone the repo, open \`WhisperCaption.xcodeproj\` in Xcode, hit ⌘R."
+            echo
+            echo "### Verify the signature"
+            echo
+            echo '```sh'
+            echo "codesign -dvvv /Applications/WhisperCaption.app 2>&1 | grep '^Authority'"
+            echo '```'
+            echo
+            echo "Authority should read \`Apple Development: albond.dev@proton.me (...)\`. Anything else means the binary was re-signed downstream and should not be trusted."
+          } > release-notes.md
+
+          echo "---"
+          cat release-notes.md
+          echo "---"
+
+      - name: Create draft GitHub Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create "${GITHUB_REF_NAME}" \
+            --title "WhisperCaption ${GITHUB_REF_NAME}" \
+            --notes-file release-notes.md \
+            --draft
+
+      - name: Print follow-up instructions
+        run: |
+          cat <<EOF
+
+          Draft release created: ${GITHUB_REF_NAME}
+
+          Next steps (run locally):
+            1. ./scripts/build-release.sh ${GITHUB_REF_NAME#v}
+            2. gh release upload ${GITHUB_REF_NAME} build/WhisperCaption-${GITHUB_REF_NAME#v}.dmg
+            3. gh release edit ${GITHUB_REF_NAME} --draft=false
+          EOF

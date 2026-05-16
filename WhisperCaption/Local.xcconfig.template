@@ -1,0 +1,6 @@
+// Local.xcconfig — local-only signing config. Copy to Local.xcconfig (gitignored)
+// and fill in your own Apple Development team ID. Leave DEVELOPMENT_TEAM empty
+// to use ad-hoc signing (Xcode "Sign to Run Locally") — TCC permissions will
+// re-prompt on every rebuild since each ad-hoc build has a fresh cdhash.
+
+DEVELOPMENT_TEAM =

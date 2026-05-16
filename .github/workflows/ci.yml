@@ -1,0 +1,78 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build & test
+    runs-on: macos-15
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Show toolchain
+        run: |
+          sw_vers
+          xcodebuild -version
+          swift --version
+
+      - name: Resolve SwiftPM dependencies
+        working-directory: WhisperCaption
+        run: |
+          xcodebuild \
+            -project WhisperCaption.xcodeproj \
+            -scheme WhisperCaption \
+            -destination 'platform=macOS' \
+            -resolvePackageDependencies
+
+      - name: Build (ad-hoc signed)
+        working-directory: WhisperCaption
+        run: |
+          set -o pipefail
+          xcodebuild \
+            -project WhisperCaption.xcodeproj \
+            -scheme WhisperCaption \
+            -configuration Debug \
+            -destination 'platform=macOS' \
+            -derivedDataPath ../build/ci \
+            CODE_SIGN_IDENTITY="-" \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGNING_ALLOWED=NO \
+            DEVELOPMENT_TEAM="" \
+            build 2>&1 | xcpretty || true
+          # Re-run without xcpretty for accurate exit code
+          xcodebuild \
+            -project WhisperCaption.xcodeproj \
+            -scheme WhisperCaption \
+            -configuration Debug \
+            -destination 'platform=macOS' \
+            -derivedDataPath ../build/ci \
+            CODE_SIGN_IDENTITY="-" \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGNING_ALLOWED=NO \
+            DEVELOPMENT_TEAM="" \
+            build
+
+      - name: Test
+        working-directory: WhisperCaption
+        run: |
+          xcodebuild \
+            -project WhisperCaption.xcodeproj \
+            -scheme WhisperCaption \
+            -configuration Debug \
+            -destination 'platform=macOS' \
+            -derivedDataPath ../build/ci \
+            CODE_SIGN_IDENTITY="-" \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGNING_ALLOWED=NO \
+            DEVELOPMENT_TEAM="" \
+            test
