@@ -238,13 +238,22 @@ Translation is independent from the transcription engine you pick: any of the th
 - About **2 GB** of free disk for a Whisper Small model if you go fully offline (more for Medium / Large)
 - For the source path only: **Xcode 16** or later
 
-### Option A — Install the pre-built `.dmg` (one minute)
+> **Strong preference: build from source (Option B below).** It's two minutes longer, signs the binary under your own Apple ID, and macOS opens it silently with no warnings — no need to trust anyone's pre-built binary, including ours. Source path is also the only way to be _certain_ what's running matches the public repo.
+
+### Option A — Install the pre-built `.dmg` (about a minute, with one Gatekeeper unlock)
 
 1. Download `WhisperCaption-X.Y.Z.dmg` from the [latest release](https://github.com/albond/WhisperCaption/releases/latest).
-2. Open the `.dmg`, drag **WhisperCaption** into **Applications**.
-3. **First launch:** right-click `WhisperCaption.app` in Applications and choose **Open** — then click **Open** again in the dialog. macOS asks once because the app is signed by a free Apple Personal Team rather than a paid Developer ID (it's not notarized — the trade-off is no $99/year fee feeding back to Apple, and no notarization metadata exposing anything about you to Apple's logs). After the first launch, double-click works as normal forever.
+2. Open the `.dmg`. Read `Read me first.txt` in the window — it has the same steps you're reading now, with paths you can copy-paste.
+3. Drag **WhisperCaption** into **Applications**.
+4. **First-launch Gatekeeper unlock (one time only).** WhisperCaption is signed by a free Apple Personal Team rather than a paid `$99/year` Developer ID — the trade-off being no annual fee feeding back to Apple and no notarization metadata in Apple's logs. macOS Gatekeeper therefore blocks the very first launch:
+   1. Double-click `WhisperCaption.app` in Applications. macOS shows _"Apple could not verify "WhisperCaption.app" is free of malware..."_. Click **Done** (there is no "Open" button on this dialog in macOS 15+).
+   2. Open **System Settings → Privacy & Security**.
+   3. **Scroll all the way to the bottom.** You will see a line that reads _"WhisperCaption.app was blocked to protect your Mac."_
+   4. Click **Open Anyway**.
+   5. Confirm with Touch ID, Apple Watch, or your account password.
+   6. The app launches. macOS remembers this choice forever — future double-clicks work like any other app.
 
-If you'd rather not bypass Gatekeeper manually, build from source — see Option B.
+If you'd rather not bypass Gatekeeper at all, build from source — see Option B.
 
 #### Verify the signature before running
 
@@ -308,8 +317,8 @@ Because everything important is an App Intent, you can wire any of it to a Strea
 
 ## ❓ FAQ
 
-**Why does my Mac say "WhisperCaption can't be opened because Apple cannot check it for malicious software"?**
-Because the `.dmg` is signed by a free Apple Personal Team rather than a paid `$99/year` Developer ID + Apple notarization. Free Personal Team signing is enough for Gatekeeper to know _who_ signed the binary (you can audit it via `codesign -dvvv`) but it doesn't carry an Apple-issued notarization stamp — so macOS shows the warning on first launch. Right-click → **Open** once and macOS remembers your choice forever. The trade-off is deliberate: skipping the Developer Program means no $99 yearly fee to Apple and no notarization metadata in Apple's logs.
+**Why does my Mac say "Apple could not verify WhisperCaption.app is free of malware"?**
+Because the `.dmg` is signed by a free Apple Personal Team rather than a paid `$99/year` Developer ID + Apple notarization. Free Personal Team signing is enough for Gatekeeper to know _who_ signed the binary (you can audit it via `codesign -dvvv`) but it doesn't carry an Apple-issued notarization stamp — so macOS warns on the very first launch. To unlock: click **Done** on the warning, open **System Settings → Privacy & Security**, scroll to the bottom, click **Open Anyway**, confirm with Touch ID / password. macOS remembers this forever. The trade-off is deliberate: skipping the Developer Program means no $99 yearly fee to Apple and no notarization metadata in Apple's logs. The whole flow is also written inside the `.dmg` itself as **Read me first.txt** so you don't have to switch tabs.
 
 **Can I trust the published `.dmg`?**
 The published `.dmg` is signed by the same Apple ID (`albond.dev@proton.me`) that owns the GitHub repo and the brand. Run `codesign -dvvv /Applications/WhisperCaption.app | grep Authority` — the first Authority line must read `Apple Development: albond.dev@proton.me (...)`. If it doesn't, something between this repo and your `.dmg` re-signed the binary, and you shouldn't run it. If you want zero trust in the binary supply chain, [build from source](#option-b--build-it-yourself-in-two-minutes) — every commit goes through [CI](https://github.com/albond/WhisperCaption/actions) and you compile against code you can read in five minutes.
@@ -338,17 +347,24 @@ No. It lives in your sandboxed Application Support directory in plain JSON — y
 
 WhisperCaption is free under the MIT licence and will stay that way. If it has saved you a coffee's worth of time, you can buy the maintainer one back — **directly to a wallet, with no third party in the middle**.
 
-Stablecoin tips are appreciated and go to a single Ethereum-mainnet address. From inside the app you can scan a QR code via **Settings → Tip Jar**; here's the bare address for copy-paste:
+Stablecoin tips go to a single EVM address that works on every EVM chain. The Tip Jar inside the app (**Settings → Tip Jar**) generates a wallet-deeplink QR code that pre-fills the recipient, the token contract, the chain ID, and (optionally) the amount, so any modern wallet (MetaMask, Trust Wallet, Rainbow, Coinbase Wallet, etc.) can pay with two taps.
 
-| Token | Network | Address |
+**The recipient address — same on every chain:**
+
+```
+0xF734F20bFeB7ddb3f0519ADAfbBa056939c9C261
+```
+
+**Two networks supported (pick whichever your wallet has funds on):**
+
+| Network | Tokens | Typical fee |
 |-|-|-|
-| **USDC** _(USD-pegged, Circle)_ | Ethereum mainnet | `0xF734F20bFeB7ddb3f0519ADAfbBa056939c9C261` |
-| **USDT** _(USD-pegged, Tether)_ | Ethereum mainnet | `0xF734F20bFeB7ddb3f0519ADAfbBa056939c9C261` |
-| **EURC** _(EUR-pegged, Circle)_ | Ethereum mainnet | `0xF734F20bFeB7ddb3f0519ADAfbBa056939c9C261` |
+| **Polygon** _(recommended)_ | USDC · USDT | under $0.01 per transfer |
+| **Ethereum mainnet** | USDC · USDT · EURC | $5–$20 per transfer (depends on congestion) |
 
-> The address is the same for all three — they're ERC-20 tokens on the same chain. **Double-check** before you send: send only to **Ethereum mainnet**. Tokens sent on the wrong chain are unrecoverable.
+> **Polygon is the default in the app.** Ethereum-mainnet gas turns a $5 tip into a $20-25 actual cost; Polygon keeps it economical at any size. EURC is offered only on Ethereum mainnet because Circle hasn't shipped a canonical Polygon deployment yet.
 
-The Tip Jar inside the app generates a wallet-deeplink QR code that pre-fills the recipient, the token contract, and (optionally) the amount, so any modern wallet (MetaMask, Trust Wallet, Rainbow, Coinbase Wallet, etc.) can pay with two taps.
+> **Double-check the network before you send.** Sending on TRC-20, BSC, Arbitrum, Base, Solana, or any chain other than the one you picked goes to a different address space and is unrecoverable.
 
 If GitHub Sponsors is more your speed, star the repo — that's also a tip, in the currency of "the algorithm noticed".
 

@@ -114,10 +114,15 @@ def draw_vignette(img: Image.Image) -> None:
 # ─── Glass arrow between icon slots ────────────────────────────────────────
 
 def draw_arrow(img: Image.Image) -> None:
-    """Slim drag arrow centred between the two icon positions (y=235)."""
-    cy = 235
-    x_start = 240          # safely past the right edge of the .app icon
-    x_end = 360            # safely before the Applications shortcut
+    """Slim drag arrow centred between the two icon positions (y=205).
+    Layout is intentionally tight at the top of the icon view so it
+    survives even when Finder shows toolbar AND statusbar (which can
+    eat ~120 of the 400 vertical points). Must align with
+    build-release.sh AppleScript icon positions: app at x=180 (right
+    edge ~224), Applications at x=420 (left edge ~376)."""
+    cy = 205
+    x_start = 250          # safely past the right edge of the .app icon
+    x_end = 350            # safely before the Applications shortcut
     head = 14
 
     # Drop shadow
@@ -177,31 +182,104 @@ def _text_center(img: Image.Image, text: str, font, y: int, fill):
     draw.text(((W - w) // 2, y), text, font=font, fill=fill)
 
 
-def draw_content(img: Image.Image) -> None:
-    """Wordmark up top with a soft glow underneath, then the drag arrow
-    (drawn separately), then a quiet drag hint at the bottom."""
-    wm_font = _font(30, "bold")
+def draw_glass_pill(img: Image.Image, x0: int, y0: int, x1: int, y1: int) -> None:
+    """Apple Liquid-Glass pill — drop shadow, backdrop blur of mesh, a
+    milky tint, a specular top highlight, and a hairline rim. Used to
+    frame the wordmark halves around the central 'Read me first.txt'."""
+    w, h = x1 - x0, y1 - y0
+    radius = h // 2   # full capsule
 
-    # Soft white glow under the wordmark
+    # 1. Drop shadow
     sh = Image.new("RGBA", img.size, (0, 0, 0, 0))
-    sd = ImageDraw.Draw(sh)
-    bbox = sd.textbbox((0, 0), "WhisperCaption", font=wm_font)
-    wm_w = bbox[2] - bbox[0]
-    sx, sy = (W - wm_w) // 2, 48
-    sd.text((sx, sy + 2), "WhisperCaption", font=wm_font,
-            fill=(255, 255, 255, 220))
-    sh = sh.filter(ImageFilter.GaussianBlur(radius=7))
+    ImageDraw.Draw(sh).rounded_rectangle(
+        [(x0, y0 + 6), (x1, y1 + 6)], radius=radius, fill=(20, 40, 80, 80)
+    )
+    sh = sh.filter(ImageFilter.GaussianBlur(radius=10))
     img.alpha_composite(sh)
 
-    # Wordmark itself
-    _text_center(img, "WhisperCaption", wm_font,
-                 y=48, fill=(22, 34, 60, 252))
+    # 2. Backdrop blur of the mesh underneath
+    crop = img.crop((x0, y0, x1, y1)).filter(ImageFilter.GaussianBlur(radius=14))
+    mask = Image.new("L", (w, h), 0)
+    ImageDraw.Draw(mask).rounded_rectangle(
+        [(0, 0), (w - 1, h - 1)], radius=radius, fill=255
+    )
+    img.paste(crop, (x0, y0), mask)
+
+    # 3. Milky white tint
+    tint = Image.new("RGBA", img.size, (0, 0, 0, 0))
+    ImageDraw.Draw(tint).rounded_rectangle(
+        [(x0, y0), (x1, y1)], radius=radius, fill=(255, 255, 255, 70)
+    )
+    img.alpha_composite(tint)
+
+    # 4. Specular top highlight — soft white fade across the upper third
+    spec = Image.new("RGBA", img.size, (0, 0, 0, 0))
+    sdraw = ImageDraw.Draw(spec)
+    spec_h = (y1 - y0) // 2
+    for i in range(spec_h):
+        a = int(90 * (1 - i / spec_h) ** 2)
+        sdraw.rectangle([(x0, y0 + i), (x1, y0 + i + 1)],
+                        fill=(255, 255, 255, a))
+    spec_mask = Image.new("L", img.size, 0)
+    ImageDraw.Draw(spec_mask).rounded_rectangle(
+        [(x0, y0), (x1, y1)], radius=radius, fill=255
+    )
+    spec_clipped = Image.new("RGBA", img.size, (0, 0, 0, 0))
+    spec_clipped.paste(spec, (0, 0), spec_mask)
+    img.alpha_composite(spec_clipped)
+
+    # 5. Hairlines — bright top rim + dim inner stroke for glass thickness
+    edges = Image.new("RGBA", img.size, (0, 0, 0, 0))
+    edraw = ImageDraw.Draw(edges)
+    edraw.rounded_rectangle(
+        [(x0, y0), (x1, y1)], radius=radius,
+        outline=(255, 255, 255, 180), width=1,
+    )
+    edraw.rounded_rectangle(
+        [(x0 + 1, y0 + 1), (x1 - 1, y1 - 1)], radius=radius - 1,
+        outline=(40, 60, 100, 38), width=1,
+    )
+    img.alpha_composite(edges)
+
+
+def _text_in_box(img: Image.Image, text: str, font,
+                 box: tuple[int, int, int, int], fill) -> None:
+    """Render text centred inside the given (x0, y0, x1, y1) rectangle."""
+    draw = ImageDraw.Draw(img)
+    x0, y0, x1, y1 = box
+    bbox = draw.textbbox((0, 0), text, font=font)
+    tw = bbox[2] - bbox[0]
+    # textbbox returns offsets — adjust so vertical centring looks right
+    # by anchoring to the font's ascent line.
+    th = bbox[3] - bbox[1]
+    tx = x0 + ((x1 - x0) - tw) // 2 - bbox[0]
+    ty = y0 + ((y1 - y0) - th) // 2 - bbox[1]
+    draw.text((tx, ty), text, font=font, fill=fill)
+
+
+def draw_content(img: Image.Image) -> None:
+    """Apple Liquid-Glass wordmark — split into two glass capsules that
+    frame the central 'Read me first.txt' (placed by build-release.sh at
+    x=300, y=75). Plus the drag arrow between icon slots and a drag hint
+    below the icon row."""
+    # Glass pill geometry — symmetric, framing the centred text-file slot.
+    pill_y0, pill_y1 = 22, 70
+    left_box = (28, pill_y0, 218, pill_y1)
+    right_box = (382, pill_y0, 572, pill_y1)
+    draw_glass_pill(img, *left_box)
+    draw_glass_pill(img, *right_box)
+
+    # Wordmark halves
+    wm_font = _font(22, "bold")
+    _text_in_box(img, "Whisper", wm_font, left_box, fill=(22, 34, 60, 252))
+    _text_in_box(img, "Caption", wm_font, right_box, fill=(22, 34, 60, 252))
 
     draw_arrow(img)
 
-    # Drag hint
+    # Drag hint — moved low enough to clear icon labels (~y=272) but high
+    # enough to stay visible when Finder shows the bottom statusbar.
     _text_center(img, "Drag WhisperCaption  →  Applications",
-                 _font(11, "regular"), y=370, fill=(40, 60, 100, 215))
+                 _font(11, "regular"), y=290, fill=(40, 60, 100, 215))
 
 
 # ─── Composition ───────────────────────────────────────────────────────────

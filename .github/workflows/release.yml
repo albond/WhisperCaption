@@ -51,9 +51,9 @@ jobs:
             echo
             echo "### Install"
             echo
-            echo "**Pre-built \`.dmg\`** — download below, then on first launch right-click \`WhisperCaption.app\` and choose **Open** (Gatekeeper bypass — see README)."
+            echo "**From source (recommended)** — clone the repo, open \`WhisperCaption.xcodeproj\` in Xcode, hit ⌘R. Your local build is signed under your own Apple ID; macOS opens it silently."
             echo
-            echo "**From source** — clone the repo, open \`WhisperCaption.xcodeproj\` in Xcode, hit ⌘R."
+            echo "**Pre-built \`.dmg\`** — download below. On first launch macOS will block with _\"Apple could not verify…\"_. Click **Done**, then go to **System Settings → Privacy & Security**, scroll to the bottom, click **Open Anyway**, confirm with Touch ID / password. macOS remembers this forever. Full instructions are inside the \`.dmg\` as **Read me first.txt**."
             echo
             echo "### Verify the signature"
             echo

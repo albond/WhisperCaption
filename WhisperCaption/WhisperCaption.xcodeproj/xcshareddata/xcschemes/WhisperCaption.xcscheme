@@ -15,7 +15,7 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "34062F722FB7291C00734835"
+               BlueprintIdentifier = "34062F6F2FB7291C00734835"
                BuildableName = "WhisperCaption.app"
                BlueprintName = "WhisperCaption"
                ReferencedContainer = "container:WhisperCaption.xcodeproj">
@@ -29,27 +29,27 @@
       selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
       shouldUseLaunchSchemeArgsEnv = "YES"
       shouldAutocreateTestPlan = "YES">
+      <MacroExpansion>
+         <BuildableReference
+            BuildableIdentifier = "primary"
+            BlueprintIdentifier = "34062F6F2FB7291C00734835"
+            BuildableName = "WhisperCaption.app"
+            BlueprintName = "WhisperCaption"
+            ReferencedContainer = "container:WhisperCaption.xcodeproj">
+         </BuildableReference>
+      </MacroExpansion>
       <Testables>
          <TestableReference
             skipped = "NO">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "34062F802FB7291D00734835"
+               BlueprintIdentifier = "34062F7C2FB7291D00734835"
                BuildableName = "WhisperCaptionTests.xctest"
                BlueprintName = "WhisperCaptionTests"
                ReferencedContainer = "container:WhisperCaption.xcodeproj">
             </BuildableReference>
          </TestableReference>
       </Testables>
-      <MacroExpansion>
-         <BuildableReference
-            BuildableIdentifier = "primary"
-            BlueprintIdentifier = "34062F722FB7291C00734835"
-            BuildableName = "WhisperCaption.app"
-            BlueprintName = "WhisperCaption"
-            ReferencedContainer = "container:WhisperCaption.xcodeproj">
-         </BuildableReference>
-      </MacroExpansion>
    </TestAction>
    <LaunchAction
       buildConfiguration = "Debug"
@@ -65,7 +65,7 @@
          runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "34062F722FB7291C00734835"
+            BlueprintIdentifier = "34062F6F2FB7291C00734835"
             BuildableName = "WhisperCaption.app"
             BlueprintName = "WhisperCaption"
             ReferencedContainer = "container:WhisperCaption.xcodeproj">
@@ -82,7 +82,7 @@
          runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "34062F722FB7291C00734835"
+            BlueprintIdentifier = "34062F6F2FB7291C00734835"
             BuildableName = "WhisperCaption.app"
             BlueprintName = "WhisperCaption"
             ReferencedContainer = "container:WhisperCaption.xcodeproj">

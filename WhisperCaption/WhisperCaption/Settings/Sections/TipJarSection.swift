@@ -1,48 +1,64 @@
 import SwiftUI
 import AppKit
 
-/// "Buy the author a coffee" — crypto-only, stablecoin-only, Ethereum
-/// mainnet only.
+/// "Buy the author a coffee" — crypto-only, stablecoin-only, address +
+/// network spelled out plainly so the donor can paste it into their own
+/// wallet's send flow.
 ///
-/// Compact layout: two settings cards, no hero, no scroll.
-///   1. "Compose" — token pills + amount with presets.
-///   2. "Scan to send" — QR, summary, recipient address with copy.
-/// Mainnet warning lives in the second card's markdown footer so it's
-/// always next to the copy-this-and-pay surface, where the donor's
-/// attention already is.
+/// No QR codes, no wallet deeplinks. We tried both: `ethereum:` EIP-681
+/// URIs are spec-compliant but their mobile-wallet support is wildly
+/// inconsistent across chains; wallet-specific HTTPS universal links
+/// (MetaMask, Trust Wallet) work in exactly one wallet each and break
+/// everywhere else. The plain-address path is the only thing that
+/// reliably works in every wallet, so that's all we offer — clearly
+/// labelled with token and network.
+///
+/// Compact layout: two settings cards, no scroll.
+///   1. "Buy the author a coffee" — token pills, filtered by the
+///      currently-selected chain.
+///   2. "Send to" — big bold instruction stating the token + chain,
+///      the address as a tappable copy-to-clipboard surface, an
+///      inline network selector, and the unmissable
+///      "<chain> only — other networks unrecoverable" warning.
 struct TipJarSection: View {
 
     private let descriptor = SettingsCategoryID.tipJar.descriptor
 
+    /// Default to Polygon — gas under a cent makes a small tip actually
+    /// economical. Donors who want Ethereum mainnet can flip the
+    /// network selector in the second card.
+    @State private var network: TipJarNetwork = .polygon
     @State private var token: TipJarToken = .usdc
-    @State private var amountText: String = ""
 
-    private var parsedAmount: TipJarAmount? {
-        TipJarAmount(text: amountText)
-    }
-
-    private var paymentURI: String {
-        TipJarPaymentURI.make(token: token, amount: parsedAmount)
-    }
-
-    private var hasValidAmount: Bool {
-        guard let parsedAmount else { return false }
-        return parsedAmount.baseUnitsString(decimals: token.decimals) != nil
+    private var warningFooter: String {
+        switch network {
+        case .polygon:
+            return "**Polygon only** — sending on any other network (Ethereum mainnet, TRC-20, BSC, Arbitrum, Base, Solana, …) goes to a different address space and is unrecoverable."
+        case .ethereum:
+            return "**Ethereum mainnet only** — sending on any other network (Polygon, TRC-20, BSC, Arbitrum, Base, Solana, …) goes to a different address space and is unrecoverable."
+        }
     }
 
     var body: some View {
         SectionShell(descriptor: descriptor) {
             TipJarComposeCard(
                 token: $token,
-                amountText: $amountText
+                network: network
             )
 
-            TipJarScanCard(
-                paymentURI: paymentURI,
+            TipJarSendCard(
                 token: token,
-                amountText: amountText,
-                hasValidAmount: hasValidAmount
+                network: $network,
+                warningFooter: warningFooter
             )
+        }
+        .onChange(of: network) { _, newValue in
+            // If the new network doesn't support the currently-selected
+            // token, snap to the first one it does. (EURC isn't on
+            // Polygon, for example.)
+            if !newValue.supportedTokens.contains(token) {
+                token = newValue.supportedTokens.first ?? .usdc
+            }
         }
     }
 }
@@ -52,7 +68,7 @@ struct TipJarSection: View {
 private struct TipJarComposeCard: View {
 
     @Binding var token: TipJarToken
-    @Binding var amountText: String
+    let network: TipJarNetwork
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
@@ -61,16 +77,20 @@ private struct TipJarComposeCard: View {
             title: "Buy the author a coffee",
             footer: "WhisperCaption is free and open source — if it saved you time today, a coffee back is appreciated. No account, no middleman, no fees skimmed."
         ) {
-            VStack(alignment: .leading, spacing: 10) {
-                TokenPillRow(selected: $token)
-                AmountRow(text: $amountText, token: token)
-            }
-            .animation(
-                reduceMotion
-                    ? .linear(duration: 0.001)
-                    : .spring(response: 0.34, dampingFraction: 0.82),
-                value: token
-            )
+            TokenPillRow(selected: $token,
+                         availableTokens: network.supportedTokens)
+                .animation(
+                    reduceMotion
+                        ? .linear(duration: 0.001)
+                        : .spring(response: 0.34, dampingFraction: 0.82),
+                    value: token
+                )
+                .animation(
+                    reduceMotion
+                        ? .linear(duration: 0.001)
+                        : .spring(response: 0.34, dampingFraction: 0.82),
+                    value: network
+                )
         }
     }
 }
@@ -80,10 +100,11 @@ private struct TipJarComposeCard: View {
 private struct TokenPillRow: View {
 
     @Binding var selected: TipJarToken
+    let availableTokens: [TipJarToken]
 
     var body: some View {
         HStack(spacing: 8) {
-            ForEach(TipJarToken.allCases) { tk in
+            ForEach(availableTokens) { tk in
                 TokenPill(
                     token: tk,
                     isSelected: tk == selected
@@ -199,254 +220,154 @@ private struct TokenPill: View {
     }
 }
 
-// MARK: - Amount row
+// MARK: - Send card
 
-private struct AmountRow: View {
+private struct TipJarSendCard: View {
 
-    @Binding var text: String
     let token: TipJarToken
-
-    @FocusState private var isFocused: Bool
-
-    var body: some View {
-        HStack(spacing: 10) {
-            inputField
-                .frame(minWidth: 130, idealWidth: 140, maxWidth: 160)
-            presetChip("5")
-            presetChip("10")
-            presetChip("20")
-            Spacer(minLength: 0)
-            if !text.isEmpty {
-                Button {
-                    text = ""
-                } label: {
-                    Text("Clear")
-                        .font(.caption.weight(.medium))
-                }
-                .buttonStyle(.borderless)
-                .foregroundStyle(.secondary)
-                .transition(.opacity)
-            }
-        }
-        .animation(.easeInOut(duration: 0.15), value: text.isEmpty)
-    }
-
-    private var inputField: some View {
-        HStack(spacing: 6) {
-            Text(token.currencySymbol)
-                .font(.title3.weight(.medium))
-                .foregroundStyle(.secondary)
-                .frame(width: 14, alignment: .leading)
-            TextField("0", text: $text)
-                .textFieldStyle(.plain)
-                .font(.title3.weight(.medium).monospacedDigit())
-                .focused($isFocused)
-        }
-        .padding(.horizontal, 10)
-        .padding(.vertical, 6)
-        .background(
-            RoundedRectangle(cornerRadius: 8, style: .continuous)
-                .fill(.background.tertiary)
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: 8, style: .continuous)
-                .strokeBorder(
-                    isFocused
-                        ? token.primaryColor.opacity(0.55)
-                        : Color.primary.opacity(0.10),
-                    lineWidth: isFocused ? 1.2 : 0.6
-                )
-        )
-        .animation(.easeInOut(duration: 0.15), value: isFocused)
-        .contentShape(Rectangle())
-        .onTapGesture { isFocused = true }
-    }
-
-    private func presetChip(_ value: String) -> some View {
-        let isActive = text == value
-        return Button {
-            text = value
-        } label: {
-            Text("\(token.currencySymbol)\(value)")
-                .font(.caption.weight(isActive ? .semibold : .medium))
-                .foregroundStyle(isActive ? .white : .primary)
-                .padding(.horizontal, 10)
-                .padding(.vertical, 5)
-                .background(
-                    Capsule()
-                        .fill(
-                            isActive
-                                ? AnyShapeStyle(token.gradient)
-                                : AnyShapeStyle(Color.primary.opacity(0.06))
-                        )
-                )
-                .overlay(
-                    Capsule()
-                        .strokeBorder(
-                            isActive
-                                ? Color.clear
-                                : Color.primary.opacity(0.08),
-                            lineWidth: 0.6
-                        )
-                )
-        }
-        .buttonStyle(.plain)
-        .animation(.easeInOut(duration: 0.16), value: isActive)
-    }
-}
-
-// MARK: - Scan card
-
-private struct TipJarScanCard: View {
-
-    let paymentURI: String
-    let token: TipJarToken
-    let amountText: String
-    let hasValidAmount: Bool
+    @Binding var network: TipJarNetwork
+    let warningFooter: String
 
     @State private var didCopy: Bool = false
     @State private var copyResetTask: Task<Void, Never>?
+    @State private var addressHover: Bool = false
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
         SettingsCard(
-            title: "Scan to send",
-            footer: "**Ethereum mainnet only** — other networks (TRC-20, Polygon, BSC, Arbitrum, Base, Solana) are unrecoverable."
+            title: "Send to",
+            footer: warningFooter
         ) {
-            VStack(spacing: 10) {
-                qrView
-                    .id(paymentURI)
-                    .transition(.opacity)
-                    .animation(
-                        reduceMotion
-                            ? .linear(duration: 0.001)
-                            : .easeInOut(duration: 0.20),
-                        value: paymentURI
-                    )
-
-                captionRow
-                addressRow
+            VStack(alignment: .center, spacing: 14) {
+                instructionRow
+                addressPlate
             }
+            .frame(maxWidth: .infinity)
         }
     }
 
-    // MARK: QR
-
-    @ViewBuilder
-    private var qrView: some View {
-        if let image = QRCodeImage.make(payload: paymentURI, targetPoints: 160) {
-            Image(nsImage: image)
-                .interpolation(.none)
-                .resizable()
-                .scaledToFit()
-                .frame(width: 160, height: 160)
-                .padding(8)
-                .background(
-                    RoundedRectangle(cornerRadius: 12, style: .continuous)
-                        .fill(.white)
-                )
-                .overlay(
-                    RoundedRectangle(cornerRadius: 12, style: .continuous)
-                        .strokeBorder(Color.primary.opacity(0.08), lineWidth: 0.6)
-                )
-                .shadow(color: .black.opacity(0.06), radius: 10, y: 3)
-                .accessibilityLabel(qrAccessibilityLabel)
-        } else {
-            ContentUnavailableView(
-                "Couldn't render QR",
-                systemImage: "exclamationmark.triangle",
-                description: Text("Copy the address below instead.")
-            )
-            .frame(height: 160)
-        }
-    }
-
-    private var qrAccessibilityLabel: String {
-        if hasValidAmount {
-            return "QR code for sending \(amountText) \(token.ticker) on Ethereum mainnet."
-        }
-        return "QR code for the Ethereum recipient address \(TipJar.recipient)."
-    }
-
-    // MARK: Caption (amount · network)
-
-    private var captionRow: some View {
-        HStack(spacing: 8) {
-            if hasValidAmount {
-                Text("\(token.currencySymbol)\(amountText)")
-                    .font(.headline.weight(.semibold))
-                    .foregroundStyle(.primary)
-                    .contentTransition(.numericText())
-                Text(token.ticker)
-                    .font(.callout.weight(.semibold))
-                    .foregroundStyle(token.primaryColor)
-            } else {
-                Text(token.ticker)
-                    .font(.headline.weight(.semibold))
-                    .foregroundStyle(token.primaryColor)
-            }
-
-            Text("·")
-                .foregroundStyle(.tertiary)
-                .padding(.horizontal, 1)
-
-            Text("Ethereum mainnet")
-                .font(.caption.weight(.medium))
+    /// Big bold "Send <TOKEN> on <NETWORK> ⇅ to:" line — the actionable
+    /// instruction. Network is an inline borderless `Menu` so changing
+    /// chain doesn't add a layout row.
+    private var instructionRow: some View {
+        HStack(spacing: 6) {
+            Text("Send")
+                .font(.title3.weight(.semibold))
+                .foregroundStyle(.secondary)
+            Text(token.ticker)
+                .font(.title3.weight(.bold))
+                .foregroundStyle(token.primaryColor)
+            Text("on")
+                .font(.title3.weight(.semibold))
+                .foregroundStyle(.secondary)
+            networkMenu
+            Text("to:")
+                .font(.title3.weight(.semibold))
                 .foregroundStyle(.secondary)
         }
+        .padding(.top, 2)
     }
 
-    // MARK: Address row
-
-    private var addressRow: some View {
-        HStack(spacing: 8) {
-            Text(TipJar.recipient)
-                .font(.system(.caption, design: .monospaced))
-                .lineLimit(1)
-                .truncationMode(.middle)
-                .textSelection(.enabled)
-                .frame(maxWidth: .infinity, alignment: .leading)
-
-            Button(action: copyAddress) {
-                HStack(spacing: 4) {
-                    Image(systemName: didCopy ? "checkmark" : "doc.on.doc")
-                        .imageScale(.small)
-                    Text(didCopy ? "Copied" : "Copy")
-                        .font(.caption.weight(.semibold))
+    /// Borderless menu styled as a thin inline label — the selected
+    /// network's brand badge (blue Ethereum diamond / purple Polygon
+    /// hexagon) sits left of the name so the donor sees what they're
+    /// switching to in their wallet's network list. Menu items use
+    /// `Label(title:image:)` which AppKit bridges to NSMenuItem with
+    /// a properly-sized 14-pt icon — wrapping the asset in custom
+    /// views inflated to native asset size in the popup.
+    private var networkMenu: some View {
+        Menu {
+            ForEach(TipJarNetwork.allCases) { net in
+                Button {
+                    network = net
+                } label: {
+                    Label("\(net.displayName) — \(net.feeHint)",
+                          image: net.assetName)
                 }
-                .foregroundStyle(didCopy ? Color.green : Color.primary)
-                .padding(.horizontal, 9)
-                .padding(.vertical, 4)
-                .background(
-                    Capsule()
-                        .fill(didCopy
-                              ? Color.green.opacity(0.12)
-                              : Color.primary.opacity(0.06))
-                )
-                .overlay(
-                    Capsule()
-                        .strokeBorder(
-                            didCopy
-                                ? Color.green.opacity(0.35)
-                                : Color.primary.opacity(0.10),
-                            lineWidth: 0.5
-                        )
-                )
-                .contentShape(Capsule())
             }
-            .buttonStyle(.plain)
-            .accessibilityLabel(didCopy ? "Address copied" : "Copy recipient address")
+        } label: {
+            HStack(spacing: 6) {
+                Image(network.assetName)
+                    .resizable()
+                    .interpolation(.high)
+                    .frame(width: 20, height: 20)
+                Text(network.displayName)
+                    .font(.title3.weight(.bold))
+                    .foregroundStyle(.primary)
+                Image(systemName: "chevron.up.chevron.down")
+                    .imageScale(.small)
+                    .foregroundStyle(.tertiary)
+            }
+            .contentShape(Rectangle())
         }
-        .padding(.horizontal, 10)
-        .padding(.vertical, 5)
-        .background(
-            RoundedRectangle(cornerRadius: 9, style: .continuous)
-                .fill(.background.tertiary)
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: 9, style: .continuous)
-                .strokeBorder(Color.primary.opacity(0.08), lineWidth: 0.5)
-        )
+        .menuStyle(.borderlessButton)
+        .menuIndicator(.hidden)
+        .fixedSize()
+        .help("Switch network")
+        .accessibilityLabel("Network: \(network.displayName). Click to change.")
+    }
+
+    /// Address as a tappable plate: monospace text, soft glass card,
+    /// click anywhere on it = copy to clipboard. The whole surface is
+    /// the affordance so there's nothing to aim at.
+    private var addressPlate: some View {
+        Button(action: copyAddress) {
+            HStack(spacing: 10) {
+                Text(TipJar.recipient)
+                    .font(.system(.body, design: .monospaced).weight(.medium))
+                    .foregroundStyle(.primary)
+                    .lineLimit(1)
+                    .truncationMode(.middle)
+                    .textSelection(.enabled)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+
+                Image(systemName: didCopy ? "checkmark" : "doc.on.doc")
+                    .imageScale(.medium)
+                    .foregroundStyle(didCopy ? Color.green : token.primaryColor)
+                    .contentTransition(.symbolEffect(.replace))
+
+                Text(didCopy ? "Copied" : "Copy")
+                    .font(.callout.weight(.semibold))
+                    .foregroundStyle(didCopy ? Color.green : token.primaryColor)
+                    .contentTransition(.opacity)
+            }
+            .padding(.horizontal, 14)
+            .padding(.vertical, 12)
+            .background(plateBackground)
+            .overlay(plateBorder)
+            .shadow(color: token.primaryColor.opacity(addressHover ? 0.18 : 0.10),
+                    radius: addressHover ? 10 : 6, y: 2)
+            .scaleEffect(addressHover ? 1.005 : 1.0)
+        }
+        .buttonStyle(.plain)
+        .contentShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+        .onHover { addressHover = $0 }
+        .animation(reduceMotion ? .linear(duration: 0.001)
+                                : .spring(response: 0.28, dampingFraction: 0.85),
+                   value: addressHover)
+        .animation(.easeInOut(duration: 0.18), value: didCopy)
+        .accessibilityLabel(didCopy ? "Address copied to clipboard"
+                                    : "Copy recipient address \(TipJar.recipient)")
+        .help("Click anywhere on the address to copy it")
+    }
+
+    private var plateBackground: some View {
+        RoundedRectangle(cornerRadius: 12, style: .continuous)
+            .fill(
+                LinearGradient(
+                    colors: [
+                        token.secondaryColor.opacity(addressHover ? 0.14 : 0.10),
+                        token.primaryColor.opacity(addressHover ? 0.08 : 0.05)
+                    ],
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                )
+            )
+    }
+
+    private var plateBorder: some View {
+        RoundedRectangle(cornerRadius: 12, style: .continuous)
+            .strokeBorder(token.primaryColor.opacity(0.30), lineWidth: 1)
     }
 
     private func copyAddress() {
@@ -472,5 +393,5 @@ private struct TipJarScanCard: View {
 
 #Preview {
     TipJarSection()
-        .frame(width: 720, height: 600)
+        .frame(width: 720, height: 480)
 }

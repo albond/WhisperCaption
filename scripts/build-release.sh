@@ -154,6 +154,10 @@ rm -rf "$DMG_STAGING" "$DMG_TEMP"
 mkdir -p "$DMG_STAGING"
 cp -R "$APP_PATH" "$DMG_STAGING/"
 ln -s /Applications "$DMG_STAGING/Applications"
+# First-launch guide — explains the Gatekeeper unlock and how to verify the
+# binary signature. The user is meant to read this before double-clicking
+# the .app.
+cp "$ROOT/Docs/dmg-readme.txt" "$DMG_STAGING/Read me first.txt"
 
 # Detach any leftover mount with the same volume name from a previous failed run.
 if [[ -d "/Volumes/$DMG_VOLNAME" ]]; then
@@ -200,11 +204,12 @@ tell application "Finder"
     end tell
     set viewOptions to icon view options of container window
     set arrangement of viewOptions to not arranged
-    set icon size of viewOptions to 112
+    set icon size of viewOptions to 88
     set text size of viewOptions to 12
     set background picture of viewOptions to file ".background:background.png"
-    set position of item "WhisperCaption.app" of container window to {160, 235}
-    set position of item "Applications" of container window to {440, 235}
+    set position of item "Read me first.txt" of container window to {300, 75}
+    set position of item "WhisperCaption.app" of container window to {180, 205}
+    set position of item "Applications" of container window to {420, 205}
     update without registering applications
     delay 2
     close
